@@ -8,11 +8,11 @@ namespace TradingMicroservices.Common.Contracts.Http
 {
     public class PortfolioResponse
     {
-        public long UserId { get; set; }
+        public string UserRef { get; set; }
         public decimal TotalMarketValue { get; set; }
         public decimal UnrealizedPnl { get; set; }
         public List<PortfolioPositionModel> Positions { get; set; } = new();
-        public DateTimeOffset AsOf { get; set; }
+        public DateTimeOffset Date { get; set; }
     }
 
     public class PortfolioPositionModel

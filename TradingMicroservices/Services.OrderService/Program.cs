@@ -33,9 +33,7 @@ builder.Services.AddSingleton<IPriceCache, PriceCache>();
 // MassTransit, RabbitMQ
 builder.Services.AddMassTransit(x =>
 {
-    // Consumer
     x.AddConsumer<PriceUpdatedConsumer>();
-    // Publisher
     x.UsingRabbitMq((context, configure) =>
     {
         var host = builder.Configuration["RabbitMQ:Host"] ?? "localhost";

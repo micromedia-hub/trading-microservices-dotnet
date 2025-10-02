@@ -18,17 +18,17 @@ namespace TradingMicroservices.Services.OrderService.Application
 
     public class OrderProcessingService : IOrderProcessingService
     {
-        private readonly IStockRepository stockRepository;
-        private readonly IOrderRepository orderRepository;
-        private readonly IUnitOfWork unitOfWork;
-        private readonly IPriceCache priceCache;
+        private readonly IStockRepository StockRepository;
+        private readonly IOrderRepository OrderRepository;
+        private readonly IUnitOfWork UnitOfWork;
+        private readonly IPriceCache PriceCache;
 
         public OrderProcessingService(IStockRepository stocks, IOrderRepository orders, IUnitOfWork uow, IPriceCache prices)
         {
-            stockRepository = stocks;
-            orderRepository = orders;
-            unitOfWork = uow;
-            priceCache = prices;
+            StockRepository = stocks;
+            OrderRepository = orders;
+            UnitOfWork = uow;
+            PriceCache = prices;
         }
 
         public async Task<OrderExecutedEvent> PlaceOrderAsync(PlaceOrderRequest request, string userRef, CancellationToken ct)
@@ -50,12 +50,14 @@ namespace TradingMicroservices.Services.OrderService.Application
             {
                 throw new ArgumentException("Invalid Side.", nameof(request.Side));
             }
-            var stock = await stockRepository.FindBySymbolAsync(request.StockSymbol.Trim(), ct);
+            var stock = await StockRepository.FindBySymbolAsync(request.StockSymbol.Trim(), ct);
             if (stock is null)
             {
                 throw new InvalidOperationException($"Unknown stock symbol '{request.StockSymbol}'.");
             }
-            if (!priceCache.TryGet(stock.Symbol, out var lastPrice))
+            // Get last price from cache
+            decimal lastPrice = 0;
+            if (!PriceCache.TryGet(stock.Symbol, out lastPrice))
             {
                 throw new InvalidOperationException($"No price available for '{stock.Symbol}'. Try again later.");
             }
@@ -80,8 +82,8 @@ namespace TradingMicroservices.Services.OrderService.Application
                 FilledQuantity = signedQuantity,
                 Date = now
             };
-            await orderRepository.AddAsync(order, ct);
-            await unitOfWork.SaveChangesAsync(ct);
+            await OrderRepository.AddAsync(order, ct);
+            await UnitOfWork.SaveChangesAsync(ct);
             return new OrderExecutedEvent
             {
                 OrderId = order.Id,

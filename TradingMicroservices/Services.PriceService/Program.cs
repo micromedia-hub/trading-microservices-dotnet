@@ -7,7 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 // MassTransit, RabbitMQ
 builder.Services.AddMassTransit(x =>
 {
-    // Publisher
     x.UsingRabbitMq((context, configure) =>
     {
         var host = builder.Configuration["RabbitMQ:Host"] ?? "localhost";

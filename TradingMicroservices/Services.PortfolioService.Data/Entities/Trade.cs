@@ -12,7 +12,9 @@ namespace TradingMicroservices.Services.PortfolioService.Data.Entities
         public Guid OrderRefId { get; set; }
         public string UserRef { get; set; }
         public int StockId { get; set; }
-        /// BUY => +Quantity; SELL => -qty
+        /// <summary>
+        /// BUY => +Quantity; SELL => -Quantity
+        /// </summary>
         public int Quantity { get; set; }
         public decimal Price { get; set; }
         public DateTimeOffset Date { get; set; }
