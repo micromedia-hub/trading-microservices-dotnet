@@ -1,7 +1,7 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
-using Services.PortfolioService.Data;
-using Services.PortfolioService.Data.Repositories;
+using TradingMicroservices.Services.PortfolioService.Data;
+using TradingMicroservices.Services.PortfolioService.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 

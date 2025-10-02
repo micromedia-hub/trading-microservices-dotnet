@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Services.OrderService.Data;
+using TradingMicroservices.Services.OrderService.Data;
 
 #nullable disable
 
-namespace Services.OrderService.Data.Migrations
+namespace TradingMicroservices.Services.OrderService.Data.Migrations
 {
     [DbContext(typeof(OrderDbContext))]
     [Migration("20251001211859_Initial")]

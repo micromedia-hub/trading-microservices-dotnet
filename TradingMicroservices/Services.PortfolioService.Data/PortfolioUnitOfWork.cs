@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Services.PortfolioService.Data
+namespace TradingMicroservices.Services.PortfolioService.Data
 {
     public interface IUnitOfWork
     {

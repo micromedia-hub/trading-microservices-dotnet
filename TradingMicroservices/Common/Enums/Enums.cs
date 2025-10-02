@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Common.Enums
+namespace TradingMicroservices.Common.Enums
 {
     public enum OrderSide
     {

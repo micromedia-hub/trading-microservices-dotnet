@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Services.PortfolioService.Data.Entities;
+using TradingMicroservices.Services.PortfolioService.Data.Entities;
 
-namespace Services.PortfolioService.Data.Repositories
+namespace TradingMicroservices.Services.PortfolioService.Data.Repositories
 {
     public interface IStockRepository
     {

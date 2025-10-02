@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Services.PortfolioService.Data;
+using TradingMicroservices.Services.PortfolioService.Data;
 
 #nullable disable
 
-namespace Services.PortfolioService.Data.Migrations
+namespace TradingMicroservices.Services.PortfolioService.Data.Migrations
 {
     [DbContext(typeof(PortfolioDbContext))]
     [Migration("20251001212323_Initial")]

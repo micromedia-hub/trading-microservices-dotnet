@@ -5,9 +5,9 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Services.PortfolioService.Data.Entities;
+using TradingMicroservices.Services.PortfolioService.Data.Entities;
 
-namespace Services.PortfolioService.Data
+namespace TradingMicroservices.Services.PortfolioService.Data
 {
     public class PortfolioDbContext : DbContext
     {

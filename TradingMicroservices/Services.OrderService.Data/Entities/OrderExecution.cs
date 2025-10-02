@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Services.OrderService.Data.Entities
+namespace TradingMicroservices.Services.OrderService.Data.Entities
 {
     public class OrderExecution
     {

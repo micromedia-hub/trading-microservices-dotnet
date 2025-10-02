@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Services.OrderService.Data.Entities;
+using TradingMicroservices.Services.OrderService.Data.Entities;
 
-namespace Services.OrderService.Data.Repositories
+namespace TradingMicroservices.Services.OrderService.Data.Repositories
 {
     public interface IOrderRepository
     {

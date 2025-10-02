@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Common.Contracts.Messaging
+namespace TradingMicroservices.Common.Contracts.Messaging
 {
     public class PriceUpdatedEvent
     {

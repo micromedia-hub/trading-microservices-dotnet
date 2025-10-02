@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Services.PortfolioService.Data.Entities
+namespace TradingMicroservices.Services.PortfolioService.Data.Entities
 {
     public class Stock
     {

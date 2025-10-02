@@ -5,9 +5,9 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Services.OrderService.Data.Entities;
+using TradingMicroservices.Services.OrderService.Data.Entities;
 
-namespace Services.OrderService.Data
+namespace TradingMicroservices.Services.OrderService.Data
 {
     public class OrderDbContext : DbContext
     {

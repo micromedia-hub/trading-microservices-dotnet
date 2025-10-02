@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Prefix solution name to every project's root namespace -->
+    <RootNamespace>TradingMicroservices.$(MSBuildProjectName)</RootNamespace>
+  </PropertyGroup>
+</Project>
