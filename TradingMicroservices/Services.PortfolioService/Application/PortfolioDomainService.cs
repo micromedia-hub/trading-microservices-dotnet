@@ -10,7 +10,7 @@ namespace TradingMicroservices.Services.PortfolioService.Application
     public interface IPortfolioDomainService
     {
         Task ApplyOrderExecutionAsync(OrderExecutedEvent message, CancellationToken ct);
-        Task ApplyPriceTickAsync(PriceUpdatedEvent message, CancellationToken ct);
+        Task ApplyPriceTickAsync(PriceUpdatedEvent message, bool useSql, CancellationToken ct);
     }
 
     public class PortfolioDomainService : IPortfolioDomainService
@@ -113,7 +113,7 @@ namespace TradingMicroservices.Services.PortfolioService.Application
             }
         }
 
-        public async Task ApplyPriceTickAsync(PriceUpdatedEvent message, CancellationToken ct)
+        public async Task ApplyPriceTickAsync(PriceUpdatedEvent message, bool useSql, CancellationToken ct)
         {
             var stock = await StockRepository.FindBySymbolAsync(message.StockSymbol, ct);
             if (stock is null)
@@ -127,7 +127,14 @@ namespace TradingMicroservices.Services.PortfolioService.Application
                 Price = Math.Round(message.Price, 4),
                 UpdateDate = message.Timestamp
             };
-            await PortfolioRepository.UpsertLastPriceAsync(lastPrice, ct);
+            if (useSql)
+            {
+                await PortfolioRepository.UpsertLastPriceSqlAsync(lastPrice, ct);
+            }
+            else
+            {
+                await PortfolioRepository.UpsertLastPriceAsync(lastPrice, ct);
+            }            
         }
     }
 }

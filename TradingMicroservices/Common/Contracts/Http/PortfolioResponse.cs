@@ -11,6 +11,14 @@ namespace TradingMicroservices.Common.Contracts.Http
         public string UserRef { get; set; }
         public decimal TotalMarketValue { get; set; }
         public decimal UnrealizedPnl { get; set; }
+        public decimal RealizedPnl { get; set; }
+        public decimal TotalPnl
+        {
+            get
+            {
+                return RealizedPnl + UnrealizedPnl;
+            }
+        }
         public List<PortfolioPositionModel> Positions { get; set; } = new();
         public DateTimeOffset Date { get; set; }
     }
@@ -23,5 +31,6 @@ namespace TradingMicroservices.Common.Contracts.Http
         public decimal LastPrice { get; set; }
         public decimal MarketValue { get; set; }
         public decimal UnrealizedPnl { get; set; }
+        public decimal RealizedPnl { get; set; }
     }
 }

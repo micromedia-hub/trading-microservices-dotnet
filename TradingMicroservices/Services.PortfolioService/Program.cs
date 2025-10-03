@@ -25,11 +25,14 @@ builder.Services.AddScoped<IUnitOfWork, PortfolioUnitOfWork>();
 // App services
 builder.Services.AddScoped<IPortfolioDomainService, PortfolioDomainService>();
 
+builder.Services.Configure<PriceUpdatedProcessingOptions>(
+    builder.Configuration.GetSection("Processing:PriceUpdated"));
+
 // MassTransit, RabbitMQ
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<OrderExecutedConsumer>();
-    x.AddConsumer<PriceUpdatedConsumer>();
+    x.AddConsumer<PriceUpdatedConsumer, PriceUpdatedConsumerDefinition>();
     x.UsingRabbitMq((context, configure) =>
     {
         var host = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
@@ -148,6 +151,7 @@ app.MapGet("/api/portfolio", async (
     var lastPrices = await portfolioRepository.GetLastPricesAsync(ct);
     decimal totalMarketValue = 0m;
     decimal totalUnrealized = 0m;
+    decimal totalRealized = 0m;
     var items = new List<PortfolioPositionModel>();
     foreach (var position in positions)
     {
@@ -156,6 +160,7 @@ app.MapGet("/api/portfolio", async (
         var unrealized = Math.Round((decimal)((lastPrice - position.AvgPrice) * position.Quantity), 4);
         totalMarketValue += marketValue;
         totalUnrealized += unrealized;
+        totalRealized += position.RealizedPnl;
         items.Add(new PortfolioPositionModel
         {
             StockSymbol = position.Stock?.Symbol ?? "(unknown)",
@@ -163,7 +168,8 @@ app.MapGet("/api/portfolio", async (
             AvgPrice = position.AvgPrice,
             LastPrice = lastPrice,
             MarketValue = marketValue,
-            UnrealizedPnl = unrealized
+            UnrealizedPnl = unrealized,
+            RealizedPnl = position.RealizedPnl
         });
     }
     var response = new PortfolioResponse
@@ -171,6 +177,7 @@ app.MapGet("/api/portfolio", async (
         UserRef = userRef,
         TotalMarketValue = Math.Round(totalMarketValue, 4),
         UnrealizedPnl = Math.Round(totalUnrealized, 4),
+        RealizedPnl = Math.Round(totalRealized, 4),
         Positions = items,
         Date = DateTimeOffset.UtcNow
     };

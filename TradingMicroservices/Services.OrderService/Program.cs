@@ -43,10 +43,10 @@ builder.Services.AddMassTransit(x =>
             h.Username(builder.Configuration["RabbitMQ:User"] ?? "guest");
             h.Password(builder.Configuration["RabbitMQ:Pass"] ?? "guest");
         });
-        configure.Message<PriceUpdatedEvent>(x =>
-        {
-            x.SetEntityName(TradingMicroservices.Common.Constants.Messaging.Exchanges.PriceUpdated);
-        });
+        configure.Message<TradingMicroservices.Common.Contracts.Messaging.OrderExecutedEvent>(m =>
+            m.SetEntityName(TradingMicroservices.Common.Constants.Messaging.Exchanges.OrderExecuted));
+        configure.Message<PriceUpdatedEvent>(m =>
+            m.SetEntityName(TradingMicroservices.Common.Constants.Messaging.Exchanges.PriceUpdated));
         configure.ConfigureEndpoints(context, new KebabCaseEndpointNameFormatter("order", false));
     });
 });

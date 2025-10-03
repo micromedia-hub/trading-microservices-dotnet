@@ -14,6 +14,7 @@ namespace TradingMicroservices.Services.PortfolioService.Data.Repositories
         Task UpsertPositionAsync(Position position, CancellationToken ct);
 
         Task UpsertLastPriceAsync(LastPrice lastPrice, CancellationToken ct);
+        Task UpsertLastPriceSqlAsync(LastPrice lastPrice, CancellationToken ct);
         Task<Dictionary<int, decimal>> GetLastPricesAsync(CancellationToken ct);
 
         Task<List<Position>> GetPositionsForUserAsync(string userRef, CancellationToken ct);
@@ -59,6 +60,23 @@ namespace TradingMicroservices.Services.PortfolioService.Data.Repositories
                 existing.UpdateDate = lastPrice.UpdateDate;
                 DbContext.LastPrices.Update(existing);
             }
+        }
+
+        /// <summary>
+        /// Atomic UPSERT
+        /// </summary>
+        /// <param name="lastPrice"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        public async Task UpsertLastPriceSqlAsync(LastPrice lastPrice, CancellationToken ct)
+        {
+            await DbContext.Database.ExecuteSqlInterpolatedAsync($@"
+                INSERT INTO portfolio.last_prices (""StockId"", ""Price"", ""UpdateDate"")
+                VALUES ({lastPrice.StockId}, {lastPrice.Price}, {lastPrice.UpdateDate})
+                ON CONFLICT (""StockId"") DO UPDATE
+                SET ""Price"" = EXCLUDED.""Price"",
+                    ""UpdateDate"" = EXCLUDED.""UpdateDate""
+                WHERE EXCLUDED.""UpdateDate"" >= portfolio.last_prices.""UpdateDate"";", ct);
         }
 
         public async Task<Dictionary<int, decimal>> GetLastPricesAsync(CancellationToken ct)
