@@ -1,6 +1,10 @@
 ﻿using System.Security.Claims;
+using System.Text;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using TradingMicroservices.Common.Contracts.Http;
 using TradingMicroservices.Services.PortfolioService.Application;
 using TradingMicroservices.Services.PortfolioService.Data;
@@ -8,8 +12,6 @@ using TradingMicroservices.Services.PortfolioService.Data.Repositories;
 using TradingMicroservices.Services.PortfolioService.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddOpenApi();
 
 // EF Core (PostgreSQL)
 builder.Services.AddDbContext<PortfolioDbContext>(opt =>
@@ -45,22 +47,84 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
+// JWT
+var jwt = builder.Configuration.GetSection("Jwt");
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
+    {
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = true,
+            ValidAudience = jwt["Audience"],
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["SigningKey"]!)),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
+
+builder.Services.AddAuthorization(o =>
+{
+    o.AddPolicy("ApiUser", p => p.RequireAuthenticatedUser());
+});
+
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "PortfolieService", Version = "v1" });
+    var scheme = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter: Bearer {your JWT}"
+    };
+    c.AddSecurityDefinition("Bearer", scheme);
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(o =>
+    {
+        o.SwaggerEndpoint("/swagger/v1/swagger.json", "PortfolioService v1");
+    });
 }
 
 app.MapGet("/api/portfolio", async (
     IPortfolioRepository portfolioRepository,
-    CancellationToken ct,
     ClaimsPrincipal user,
-    HttpContext ctx) =>
+    HttpContext httpContext,
+    ILoggerFactory loggerFactory,
+    CancellationToken ct) =>
 {
+    var logger = loggerFactory.CreateLogger("PortfolioService");
     var userRef = user.FindFirst("sub")?.Value
                ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value
-               ?? ctx.Request.Headers[TradingMicroservices.Common.Constants.Messaging.Headers.UserRef].FirstOrDefault();
+               ?? httpContext.Request.Headers[TradingMicroservices.Common.Constants.Messaging.Headers.UserRef].FirstOrDefault();
     if (string.IsNullOrWhiteSpace(userRef))
     {
         return Results.Unauthorized();
@@ -99,6 +163,7 @@ app.MapGet("/api/portfolio", async (
 })
 .WithName("GetPortfolio")
 .Produces<PortfolioResponse>(StatusCodes.Status200OK)
-.Produces(StatusCodes.Status401Unauthorized);
+.Produces(StatusCodes.Status401Unauthorized)
+.RequireAuthorization("ApiUser");
 
 app.Run();

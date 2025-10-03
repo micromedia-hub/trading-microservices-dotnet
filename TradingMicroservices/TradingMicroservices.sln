@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tools.TokenGenerator", "Tools.TokenGenerator\Tools.TokenGenerator.csproj", "{6BF2CCCB-4A4E-431E-B2C6-BB3943CED1AE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{2E6546BE-4132-4526-A668-7845FAB2E923}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E6546BE-4132-4526-A668-7845FAB2E923}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E6546BE-4132-4526-A668-7845FAB2E923}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BF2CCCB-4A4E-431E-B2C6-BB3943CED1AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BF2CCCB-4A4E-431E-B2C6-BB3943CED1AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BF2CCCB-4A4E-431E-B2C6-BB3943CED1AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BF2CCCB-4A4E-431E-B2C6-BB3943CED1AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

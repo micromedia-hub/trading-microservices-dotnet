@@ -7,13 +7,13 @@ using TradingMicroservices.Services.OrderService.Data.Repositories;
 using TradingMicroservices.Services.OrderService.Data;
 using TradingMicroservices.Services.OrderService.Infrastructure;
 using TradingMicroservices.Services.OrderService.Messaging;
-using TradingMicroservices.Common.Enums;
-using TradingMicroservices.Services.OrderService.Data.Entities;
 using TradingMicroservices.Services.OrderService.Application;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<OrderDbContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("OrderDb")));
@@ -51,11 +51,71 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
+// JWT
+var jwt = builder.Configuration.GetSection("Jwt");
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
+    {
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = true,
+            ValidAudience = jwt["Audience"],
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["SigningKey"]!)),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
+
+builder.Services.AddAuthorization(o =>
+{
+    o.AddPolicy("ApiUser", p => p.RequireAuthenticatedUser());
+});
+
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "OrderService", Version = "v1" });
+    var scheme = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter: Bearer {your JWT}"
+    };
+    c.AddSecurityDefinition("Bearer", scheme);
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(o =>
+    {
+        o.SwaggerEndpoint("/swagger/v1/swagger.json", "OrderService v1");
+    });
 }
 
 app.MapPost("/api/order/add", async (
@@ -67,9 +127,10 @@ app.MapPost("/api/order/add", async (
     ILoggerFactory loggerFactory,
     CancellationToken ct) =>
 {
-    var logger = loggerFactory.CreateLogger("OrderPlace");
+    var logger = loggerFactory.CreateLogger("OrderService");
+    logger.LogInformation("Order requested: {StockSymbol} {Quantity} {Side}", request.StockSymbol, request.Quantity, request.Side);
     var userRef = user.FindFirst("sub")?.Value
-                 ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+    ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value
                  ?? httpContext.Request.Headers[TradingMicroservices.Common.Constants.Messaging.Headers.UserRef].FirstOrDefault();
     if (string.IsNullOrWhiteSpace(userRef))
     {
@@ -95,6 +156,7 @@ app.MapPost("/api/order/add", async (
 .WithName("PlaceOrder")
 .Produces(StatusCodes.Status201Created)
 .Produces(StatusCodes.Status400BadRequest)
-.Produces(StatusCodes.Status401Unauthorized);
+.Produces(StatusCodes.Status401Unauthorized)
+.RequireAuthorization("ApiUser");
 
 app.Run();
