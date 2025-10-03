@@ -7,7 +7,10 @@ using System.Windows.Forms;
 namespace Tools.TokenGenerator
 {
     /// <summary>
-    /// Sample usage: --sub demo-user-1 --scope api.read --hours 8
+    /// Sample usage:
+    /// 1) Run the app
+    /// 2) Token is copied to clipboard
+    /// 3) Close the app
     /// </summary>
     internal static class Program
     {
@@ -32,6 +35,7 @@ namespace Tools.TokenGenerator
                 expires: DateTime.UtcNow.AddHours(Hours),
                 signingCredentials: credentials);
             string jwt = new JwtSecurityTokenHandler().WriteToken(token);
+            Console.WriteLine($"UserRef: {userRef}");
             Console.WriteLine(jwt);
             try
             {
