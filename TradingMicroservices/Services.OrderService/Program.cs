@@ -12,9 +12,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// EF Core (PostgreSQL)
 builder.Services.AddDbContext<OrderDbContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("OrderDb")));
 

@@ -1,0 +1,62 @@
+services:
+  price-service:
+    build:
+      context: .
+      dockerfile: Services.PriceService/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Docker"
+      RabbitMQ__Host: host.docker.internal
+      RabbitMQ__VirtualHost: /
+      RabbitMQ__User: guest
+      RabbitMQ__Pass: guest
+    restart: on-failure
+
+  order-service:
+    build:
+      context: .
+      dockerfile: Services.OrderService/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Docker"
+      ConnectionStrings__OrderDb: "Host=host.docker.internal;Port=5432;Database=TradingMicroservices.Order;Username=postgres;Password=admin"
+      RabbitMQ__Host: host.docker.internal
+      RabbitMQ__VirtualHost: /
+      RabbitMQ__User: guest
+      RabbitMQ__Pass: guest
+      Jwt__Audience: "trading-api"
+      Jwt__SigningKey: "super-secret-test-key-change-me-32+chars"
+    restart: on-failure
+
+  portfolio-service:
+    build:
+      context: .
+      dockerfile: Services.PortfolioService/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Docker"
+      ConnectionStrings__PortfolioDb: "Host=host.docker.internal;Port=5432;Database=TradingMicroservices.Portfolio;Username=postgres;Password=admin"
+      RabbitMQ__Host: host.docker.internal
+      RabbitMQ__VirtualHost: /
+      RabbitMQ__User: guest
+      RabbitMQ__Pass: guest
+      Jwt__Audience: "trading-api"
+      Jwt__SigningKey: "super-secret-test-key-change-me-32+chars"
+      Processing__PriceUpdated__UseSqlUpsert: "true"
+      Processing__PriceUpdated__ConcurrencyMode: "Partitioned"
+      Processing__PriceUpdated__Partitions: "8"
+      Processing__PriceUpdated__RetryCount: "3"
+      Processing__PriceUpdated__RetryIntervalMilliseconds: "250"
+    restart: on-failure
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Gateway.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Docker"
+      Jwt__Audience: "trading-api"
+      Jwt__SigningKey: "super-secret-test-key-change-me-32+chars"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - order-service
+      - portfolio-service
+    restart: on-failure

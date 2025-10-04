@@ -2,8 +2,8 @@
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-WORKDIR /app
 ENV ASPNETCORE_URLS=http://0.0.0.0:8080
+WORKDIR /app
 EXPOSE 8080
 
 
@@ -16,12 +16,17 @@ COPY ["Gateway.Api/Gateway.Api.csproj", "Gateway.Api/"]
 COPY ["Common/Common.csproj", "Common/"]
 RUN dotnet restore "./Gateway.Api/Gateway.Api.csproj"
 COPY . .
+WORKDIR "/src/Gateway.Api"
+
+RUN dotnet build "Gateway.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./Gateway.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "Gateway.Api.dll"]
