@@ -40,11 +40,25 @@ namespace Tools.TokenGenerator
             try
             {
                 Clipboard.SetText(jwt);
+                Console.WriteLine();
                 Console.WriteLine("Token copied to clipboard.");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Could not copy token to clipboard: {ex.Message}");
+            }
+            if (Environment.UserInteractive && !Console.IsInputRedirected)
+            {
+                Console.WriteLine();
+                Console.Write("Press any key to exit...");
+                try
+                {
+                    Console.ReadKey(intercept: true);
+                }
+                catch
+                {
+                    /* ignored */
+                }
             }
         }
     }
