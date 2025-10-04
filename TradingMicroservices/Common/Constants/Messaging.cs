@@ -21,5 +21,11 @@ namespace TradingMicroservices.Common.Constants
             public const string CorrelationId = "X-Correlation-Id";
             public const string UserRef = "X-User-Ref";
         }
+
+        public static class LogProperties
+        {
+            public const string CorrelationId = "CorrelationId";
+            public const string UserRef = "UserRef";
+        }
     }
 }

@@ -8,7 +8,7 @@ namespace TradingMicroservices.Services.OrderService.Application
     /// </summary>
     public interface IOrderEventPublisher
     {
-        Task PublishOrderExecutedAsync(OrderExecutedEvent result, CancellationToken ct);
+        Task PublishOrderExecutedAsync(OrderExecutedEvent result, string correlationId, CancellationToken ct);
     }
 
     public class OrderEventPublisher : IOrderEventPublisher
@@ -20,20 +20,15 @@ namespace TradingMicroservices.Services.OrderService.Application
             Publisher = publisher;
         }
 
-        public Task PublishOrderExecutedAsync(OrderExecutedEvent result, CancellationToken ct)
+        public Task PublishOrderExecutedAsync(OrderExecutedEvent result, string correlationId, CancellationToken ct)
         {
-            var evt = new OrderExecutedEvent
+            return Publisher.Publish(result, send => 
             {
-                OrderId = result.OrderId,
-                UserRef = result.UserRef,
-                StockSymbol = result.StockSymbol,
-                FilledQuantity = result.FilledQuantity,
-                FillPrice = result.FillPrice,
-                Date = result.Date,
-                TraceId = Guid.NewGuid().ToString()
-            };
-
-            return Publisher.Publish(evt, ct);
+                if (!string.IsNullOrWhiteSpace(correlationId))
+                {
+                    send.Headers.Set(TradingMicroservices.Common.Constants.Messaging.Headers.CorrelationId, correlationId);
+                }
+            }, ct);
         }
     }
 }

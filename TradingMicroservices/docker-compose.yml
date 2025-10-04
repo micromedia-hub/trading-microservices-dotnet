@@ -24,6 +24,7 @@ services:
       RabbitMQ__Pass: guest
       Jwt__Audience: "trading-api"
       Jwt__SigningKey: "super-secret-test-key-change-me-32+chars"
+      Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command: "Warning"
     restart: on-failure
 
   portfolio-service:
@@ -44,6 +45,7 @@ services:
       Processing__PriceUpdated__Partitions: "8"
       Processing__PriceUpdated__RetryCount: "3"
       Processing__PriceUpdated__RetryIntervalMilliseconds: "250"
+      Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command: "Warning"
     restart: on-failure
 
   gateway:

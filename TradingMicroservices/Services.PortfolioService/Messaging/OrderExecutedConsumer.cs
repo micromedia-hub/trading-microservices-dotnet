@@ -23,9 +23,13 @@ namespace TradingMicroservices.Services.PortfolioService.Messaging
 
         public async Task Consume(ConsumeContext<OrderExecutedEvent> context)
         {
-            await Service.ApplyOrderExecutionAsync(context.Message, context.CancellationToken);
-            await UnitOfWork.SaveChangesAsync(context.CancellationToken);
-            Logger.LogInformation("Applied OrderExecutedEvent: {OrderId} for {UserRef}", context.Message.OrderId, context.Message.UserRef);
+            var correlationId = context.Headers.Get<string>(TradingMicroservices.Common.Constants.Messaging.Headers.CorrelationId) ?? "(none)";
+            using (Serilog.Context.LogContext.PushProperty(TradingMicroservices.Common.Constants.Messaging.LogProperties.CorrelationId, correlationId))
+            {
+                await Service.ApplyOrderExecutionAsync(context.Message, context.CancellationToken);
+                await UnitOfWork.SaveChangesAsync(context.CancellationToken);
+                Logger.LogInformation("Applied OrderExecutedEvent: {OrderId} for {UserRef}", context.Message.OrderId, context.Message.UserRef);
+            }
         }
     }
 }
